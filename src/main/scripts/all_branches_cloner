@@ -1,0 +1,68 @@
+#!/usr/bin/env python
+
+import argparse
+import logging
+from getpass import getpass, getuser
+from all_branches_cloner import CloneAllBranches
+
+
+def parse_arguments(argv=None):
+    description = """
+    Get all open branches from a bitbucket repo.
+
+    Checks the bitbucket API for all branches with commits ahead of master and clones them into seperate directories.
+    Updates existing directories and deletes merged branches (those without commits ahead).
+    """
+    parser = argparse.ArgumentParser(description=description)
+    # server, project, repo, target, symlinks={}
+    parser.add_argument('-s', '--server', help="FQDN of the Bitbucket server", required=True)
+    parser.add_argument('-p', '--project', help="project key", required=True)
+    parser.add_argument('-r', '--repo', help="repository name", required=True)
+    parser.add_argument('-t', '--target', help="target directory", required=True)
+    parser.add_argument(
+        '-l',
+        '--link',
+        action='append',
+        dest='symlinks',
+        help="Format: 'name:target' - creates a symlink 'name' in each branch directory pointing to the 'target'. Can be added multiple times."
+    )
+    parser.add_argument(
+        '-k',
+        '--keep',
+        action='append',
+        default=[],
+        help="do not delete the given environments. Can be added multiple times."
+    )
+    parser.add_argument(
+        '-d',
+        '--debug',
+        action='store_const',
+        const=logging.INFO,
+        default=logging.WARNING,
+        dest='loglevel'
+    )
+    parser.add_argument('-u', '--user', help="Username for the Bitbucket API", default=getuser())
+    parser.add_argument('--password', help="Password for the Bitbucket API")
+    args = parser.parse_args(argv)
+    symlinks = {}
+    if args.symlinks:
+        for link in args.symlinks:
+            (key, value) = link.split(':')
+            symlinks[key] = value
+    args.symlinks = symlinks
+    if not args.password:
+        args.password = getpass()
+    return args
+
+
+def main():
+    args = vars(parse_arguments())
+    clones = CloneAllBranches(**args)
+    all_branches = clones.get_all_branch_info()
+    clones.store_open_branch_names(all_branches)
+    clones.remove_obsolete_branches()
+    clones.update_or_clone_open_branches()
+
+
+if __name__ == "__main__":
+    main()
