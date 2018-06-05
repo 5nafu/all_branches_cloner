@@ -20,3 +20,4 @@ def set_properties(project):
     project.depends_on('pprint')
     project.depends_on('argparse')
     project.depends_on('logging')
+    project.build_depends_on('testfixtures')
