@@ -58,10 +58,7 @@ def parse_arguments(argv=None):
 def main():
     args = vars(parse_arguments())
     clones = CloneAllBranches(**args)
-    all_branches = clones.get_all_branch_info()
-    clones.store_open_branch_names(all_branches)
-    clones.remove_obsolete_branches()
-    clones.update_or_clone_open_branches()
+    clones.create_clones()
 
 
 if __name__ == "__main__":

@@ -39,13 +39,14 @@ class CloneAllBranches(object):
             json = request.json()
             metadata.extend(json['values'])
             lastpage = json['isLastPage']
+            self.logger.info("Got isLastPage: %s" % lastpage)
             if not lastpage:
                 start = json['nextPageStart']
         self.logger.info("Got %i branches" % len(metadata))
         self.logger.info("FINISHED - getting all branches")
         return metadata
 
-    def store_open_branch_names(self, all_branches):
+    def get_open_branch_names(self, all_branches):
         self.logger.info("STARTING - getting open branches")
         open_branches = []
         provider = 'com.atlassian.bitbucket.server.bitbucket-branch:ahead-behind-metadata-provider'
@@ -53,8 +54,8 @@ class CloneAllBranches(object):
             if branch['metadata'].get(provider) and branch['metadata'][provider]['ahead'] > 0:
                 self.logger.info("Found open branch '%s' (%i commits ahead)" % (branch['displayId'], branch['metadata'][provider]['ahead']))
                 open_branches.append(branch['displayId'])
-        self.open_branches = open_branches
         self.logger.info("FINISHED - getting open branches")
+        return open_branches
 
     def remove_obsolete_branches(self):
         self.logger.info("STARTING - removing old branches")
@@ -92,3 +93,9 @@ class CloneAllBranches(object):
                     else:
                         self.logger.info("link '%s' already exists" % os.path.join(branch, symlink))
         self.logger.info("FINISHED - updating / cloning open branches")
+
+    def create_clones(self):
+        all_branches = self.get_all_branch_info()
+        self.open_branches = self.get_open_branch_names(all_branches)
+        self.remove_obsolete_branches()
+        self.update_or_clone_open_branches()
