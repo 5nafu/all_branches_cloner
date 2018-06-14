@@ -4,7 +4,6 @@ import requests
 import os
 import git
 import logging
-from pprint import pformat
 
 
 class CloneAllBranches(object):
@@ -23,7 +22,7 @@ class CloneAllBranches(object):
         self.logger.info("CloneAllBranches initialized with options:")
         options = dict(vars(self))
         options['password'] = "********" if options['password'] else options['password']
-        self.logger.info(pformat(options))
+        self.logger.info(options)
 
     def get_all_branch_info(self):
         self.logger.info("STARTING - getting all branches")

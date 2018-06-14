@@ -16,10 +16,6 @@ default_task = "publish"
 def set_properties(project):
     project.depends_on('requests')
     project.depends_on('gitpython')
-    project.depends_on('logging')
-    project.depends_on('pprint')
-    project.depends_on('argparse')
-    project.depends_on('logging')
     project.build_depends_on('testfixtures')
     project.build_depends_on('responses')
     project.build_depends_on('mock')
