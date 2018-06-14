@@ -172,56 +172,61 @@ class CloneAllBranchesTest(unittest.TestCase):
 
     @mock.patch('all_branches_cloner.os.path')
     @mock.patch('all_branches_cloner.os')
-    def test_remove_obsolete_branches_no_removing_only_files(self, os_mock, path_mock):
+    @mock.patch('all_branches_cloner.shutil')
+    def test_remove_obsolete_branches_no_removing_only_files(self, shutil_mock, os_mock, path_mock):
         self.cloner.open_branches = []
         os_mock.listdir.return_value = ['file1', 'file2', 'file3']
         path_mock.isdir.return_value = False
         path_mock.islink.return_value = False
         self.cloner.remove_obsolete_branches()
         os_mock.listdir.assert_called_with(self.directory)
-        assert not os_mock.rmdir.called, "rmdir should not have been called"
+        assert not shutil_mock.rmtree.called, "rmtree should not have been called"
 
     @mock.patch('all_branches_cloner.os.path')
     @mock.patch('all_branches_cloner.os')
-    def test_remove_obsolete_branches_no_removing_symlink(self, os_mock, path_mock):
+    @mock.patch('all_branches_cloner.shutil')
+    def test_remove_obsolete_branches_no_removing_symlink(self, shutil_mock, os_mock, path_mock):
         self.cloner.open_branches = []
         os_mock.listdir.return_value = ['symlink']
         path_mock.isdir.return_value = True
         path_mock.islink.return_value = True
         self.cloner.remove_obsolete_branches()
-        assert not os_mock.rmdir.called, "rmdir should not have been called on symlink"
+        assert not shutil_mock.rmtree.called, "rmtree should not have been called on symlink"
 
     @mock.patch('all_branches_cloner.os.path')
     @mock.patch('all_branches_cloner.os')
-    def test_remove_obsolete_branches_no_removing_whitelisted(self, os_mock, path_mock):
+    @mock.patch('all_branches_cloner.shutil')
+    def test_remove_obsolete_branches_no_removing_whitelisted(self, shutil_mock, os_mock, path_mock):
         self.cloner.open_branches = []
         self.cloner.keep_environments = ['whitelisted']
         os_mock.listdir.return_value = self.cloner.keep_environments
         path_mock.isdir.return_value = True
         path_mock.islink.return_value = False
         self.cloner.remove_obsolete_branches()
-        assert not os_mock.rmdir.called, "rmdir should not have been called on whitelisted"
+        assert not shutil_mock.rmtree.called, "rmtree should not have been called on whitelisted"
 
     @mock.patch('all_branches_cloner.os.path')
     @mock.patch('all_branches_cloner.os')
-    def test_remove_obsolete_branches_no_removing_open(self, os_mock, path_mock):
+    @mock.patch('all_branches_cloner.shutil')
+    def test_remove_obsolete_branches_no_removing_open(self, shutil_mock, os_mock, path_mock):
         self.cloner.open_branches = ['open']
         os_mock.listdir.return_value = self.cloner.open_branches
         path_mock.isdir.return_value = True
         path_mock.islink.return_value = False
         self.cloner.remove_obsolete_branches()
-        assert not os_mock.rmdir.called, "rmdir should not have been called on open branch"
+        assert not shutil_mock.rmtree.called, "rmtree should not have been called on open branch"
 
     @mock.patch('all_branches_cloner.os.path')
     @mock.patch('all_branches_cloner.os')
-    def test_remove_obsolete_branches_removes_merged_branch(self, os_mock, path_mock):
+    @mock.patch('all_branches_cloner.shutil')
+    def test_remove_obsolete_branches_removes_merged_branch(self, shutil_mock, os_mock, path_mock):
         self.cloner.open_branches = []
         os_mock.listdir.return_value = ['merged']
         path_mock.isdir.return_value = True
         path_mock.islink.return_value = False
         path_mock.join.return_value = 'merged'
         self.cloner.remove_obsolete_branches()
-        os_mock.rmdir.assert_called_with('merged')
+        shutil_mock.rmtree.assert_called_with('merged')
         path_mock.join.assert_called_with(self.directory, 'merged')
 
     @mock.patch('all_branches_cloner.git')
