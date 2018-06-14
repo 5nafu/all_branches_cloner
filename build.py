@@ -1,4 +1,4 @@
-from pybuilder.core import use_plugin, init
+from pybuilder.core import use_plugin, init, Author
 
 use_plugin("python.core")
 use_plugin("python.unittest")
@@ -8,8 +8,12 @@ use_plugin("python.coverage")
 use_plugin("python.distutils")
 
 
-name = "all_branches_cloner"
-default_task = "publish"
+name = "all-branches-cloner"
+license = 'GNU GPL v3'
+version = "1.1"
+summary = "Clones all open branches from a bitbucket server"
+default_task = ["install_dependencies", "publish"]
+authors = [Author("Tobias Vollmer", "info@tvollmer.de")]
 
 
 @init
