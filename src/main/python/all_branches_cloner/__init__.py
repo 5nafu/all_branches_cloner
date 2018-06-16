@@ -4,6 +4,7 @@ import requests
 import os
 import git
 import logging
+import shutil
 
 
 class CloneAllBranches(object):
@@ -68,7 +69,7 @@ class CloneAllBranches(object):
                 self.logger.info('Not removing branch "%s" -> is a symlink' % branch)
             else:
                 self.logger.info('Removing branch "%s"' % branch)
-                os.rmdir(os.path.join(self.target, branch))
+                shutil.rmtree(os.path.join(self.target, branch))
         self.logger.info('FINISHED - removing old branches')
 
     def update_or_clone_open_branches(self):
