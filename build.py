@@ -14,12 +14,12 @@ name = "all-branches-cloner"
 license = 'GNU GPL v3'
 version = "1.1"
 summary = "Clones all open branches from a bitbucket server"
-default_task = ["install_dependencies", "publish"]
+default_task = ["install_dependencies", 'clean', 'analyze', 'package']
 authors = [Author("Tobias Vollmer", "info@tvollmer.de")]
 
 
 @task
-@depends("publish")
+@depends('analyze', 'package')
 @description("Creates a debian package")
 def create_deb(project, logger):
     command = [
