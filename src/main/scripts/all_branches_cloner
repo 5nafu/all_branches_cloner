@@ -7,31 +7,31 @@ from all_branches_cloner import CloneAllBranches
 
 
 def parse_arguments(argv=None):
-    description = """
+    description = '''
     Get all open branches from a bitbucket repo.
 
     Checks the bitbucket API for all branches with commits ahead of master and clones them into seperate directories.
     Updates existing directories and deletes merged branches (those without commits ahead).
-    """
+    '''
     parser = argparse.ArgumentParser(description=description)
     # server, project, repo, target, symlinks={}
-    parser.add_argument('-s', '--server', help="FQDN of the Bitbucket server", required=True)
-    parser.add_argument('-p', '--project', help="project key", required=True)
-    parser.add_argument('-r', '--repo', help="repository name", required=True)
-    parser.add_argument('-t', '--target', help="target directory", required=True)
+    parser.add_argument('-s', '--server', help='FQDN of the Bitbucket server', required=True)
+    parser.add_argument('-p', '--project', help='project key', required=True)
+    parser.add_argument('-r', '--repo', help='repository name', required=True)
+    parser.add_argument('-t', '--target', help='target directory', required=True)
     parser.add_argument(
         '-l',
         '--link',
         action='append',
         dest='symlinks',
-        help="Format: 'name:target' - creates a symlink 'name' in each branch directory pointing to the 'target'. Can be added multiple times."
+        help='Format: 'name:target' - creates a symlink 'name' in each branch directory pointing to the 'target'. Can be added multiple times.'
     )
     parser.add_argument(
         '-k',
         '--keep',
         action='append',
         default=[],
-        help="do not delete the given environments. Can be added multiple times."
+        help='do not delete the given environments. Can be added multiple times.'
     )
     parser.add_argument(
         '-d',
@@ -41,8 +41,8 @@ def parse_arguments(argv=None):
         default=logging.WARNING,
         dest='loglevel'
     )
-    parser.add_argument('-u', '--user', help="Username for the Bitbucket API", default=getuser())
-    parser.add_argument('--password', help="Password for the Bitbucket API")
+    parser.add_argument('-u', '--user', help='Username for the Bitbucket API', default=getuser())
+    parser.add_argument('--password', help='Password for the Bitbucket API')
     args = parser.parse_args(argv)
     symlinks = {}
     if args.symlinks:
@@ -61,5 +61,5 @@ def main():
     clones.create_clones()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
