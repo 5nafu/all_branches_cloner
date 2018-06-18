@@ -61,4 +61,4 @@ def set_properties(project):
 def set_properties_for_jenkins_builds(project):
     import os
     project.set_property('teamcity_output', True)
-    project.default_task = ['install_build_dependencies', 'clean', 'analyze', 'package', 'create_deb']
+    project.default_task = ['install_dependencies', 'clean', 'analyze', 'package', 'create_deb']
