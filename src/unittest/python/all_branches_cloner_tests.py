@@ -322,3 +322,17 @@ class CloneAllBranchesTest(unittest.TestCase):
             for symlink in self.cloner.symlinks.keys():
                 calls.append(mock.call(self.cloner.symlinks[symlink], '/'.join([self.directory, branch, symlink])))
         os_mock.symlink.assert_has_calls(calls, any_order=True)
+
+    @mock.patch('all_branches_cloner.all_branches_cloner.git')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os.path')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os')
+    def test_update_or_clone_open_branches_create_symlinks_with_slash(self, os_mock, path_mock, git_mock):
+        self.cloner.open_branches = ['open_branch1/with_slash']
+        self.cloner.symlinks = {'symlink1': 'target1'}
+        path_mock.isdir.return_value = False
+        path_mock.exists.return_value = False
+        path_mock.join.side_effect = os.path.join
+        self.cloner.update_or_clone_open_branches()
+        call = mock.call(self.cloner.symlinks['symlink1'], '/'.join([self.directory, self.cloner.open_branches[0], 'symlink1']))
+        self.assertNotIn(call, os_mock.symlink.call_args_list)
+        assert os_mock.symlink.call_count == 1

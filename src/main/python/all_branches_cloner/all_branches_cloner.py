@@ -92,9 +92,9 @@ class CloneAllBranches(object):
             if self.symlinks:
                 self.logger.info('Generating symlinks:')
                 for symlink in self.symlinks.keys():
-                    if not os.path.exists(os.path.join(self.target, branch, symlink)):
+                    if not os.path.exists(os.path.join(directory, symlink)):
                         self.logger.info('generating link: %s -> %s' % (self.symlinks[symlink], os.path.join(branch, symlink)))
-                        os.symlink(self.symlinks[symlink], os.path.join(self.target, branch, symlink))
+                        os.symlink(self.symlinks[symlink], os.path.join(directory, symlink))
                     else:
                         self.logger.info('link "%s" already exists' % os.path.join(branch, symlink))
         self.logger.info('FINISHED - updating / cloning open branches')
