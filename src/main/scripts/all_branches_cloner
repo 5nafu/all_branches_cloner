@@ -1,9 +1,12 @@
 #!/usr/bin/env python
+from __future__ import print_function
 
 import argparse
 import logging
-from getpass import getpass, getuser
 from all_branches_cloner import CloneAllBranches
+from sys import exit, stderr
+from getpass import getpass, getuser
+from yamlreader import yaml_load, data_merge
 
 
 def parse_arguments(argv=None):
@@ -13,27 +16,47 @@ def parse_arguments(argv=None):
     Checks the bitbucket API for all branches with commits ahead of master and clones them into seperate directories.
     Updates existing directories and deletes merged branches (those without commits ahead).
     '''
-    parser = argparse.ArgumentParser(description=description)
+    epilog = '''
+    The configuration file(s) are formatted as YAML file. You can either supply a single file or a directory with *.yaml-files.
+    Possible Options:
+    ---
+    server: FQDN*
+    project: KEY*
+    repo: repository*
+    target: path/to/target/directory*
+    user: Username
+    password: Password
+    symlinks:
+        name1: targetdirectory1
+        name2: targetdirectory2
+    keep:
+        - environmentname
+    '''
+    parser = argparse.ArgumentParser(description=description, epilog=epilog, formatter_class=argparse.RawTextHelpFormatter)
     # server, project, repo, target, symlinks={}
-    parser.add_argument('-s', '--server', help='FQDN of the Bitbucket server', required=True)
-    parser.add_argument('-p', '--project', help='project key', required=True)
-    parser.add_argument('-r', '--repo', help='repository name', required=True)
-    parser.add_argument('-t', '--target', help='target directory', required=True)
-    parser.add_argument(
+    required_group = parser.add_argument_group('required options', 'Can be omitted if a configuration file is used')
+    required_group.add_argument('-s', '--server', help='FQDN of the Bitbucket server', default=argparse.SUPPRESS)
+    required_group.add_argument('-p', '--project', help='project key', default=argparse.SUPPRESS)
+    required_group.add_argument('-r', '--repo', help='repository name', default=argparse.SUPPRESS)
+    required_group.add_argument('-t', '--target', help='target directory', default=argparse.SUPPRESS)
+    optional_group = parser.add_argument_group('optional options')
+    optional_group.add_argument('-u', '--user', help='Username for the Bitbucket API', default=argparse.SUPPRESS)
+    optional_group.add_argument('--password', help='Password for the Bitbucket API', default=argparse.SUPPRESS)
+    optional_group.add_argument(
         '-l',
         '--link',
         action='append',
         dest='symlinks',
-        help='Format: 'name:target' - creates a symlink 'name' in each branch directory pointing to the 'target'. Can be added multiple times.'
+        help='Format: "name:target" - creates a symlink "name" in each branch directory pointing to the "target". Can be added multiple times.'
     )
-    parser.add_argument(
+    optional_group.add_argument(
         '-k',
         '--keep',
         action='append',
         default=[],
         help='do not delete the given environments. Can be added multiple times.'
     )
-    parser.add_argument(
+    optional_group.add_argument(
         '-d',
         '--debug',
         action='store_const',
@@ -41,24 +64,45 @@ def parse_arguments(argv=None):
         default=logging.WARNING,
         dest='loglevel'
     )
-    parser.add_argument('-u', '--user', help='Username for the Bitbucket API', default=getuser())
-    parser.add_argument('--password', help='Password for the Bitbucket API')
+    fileconfig_group = parser.add_argument_group('configuration file')
+    fileconfig_group.add_argument('-c', '--config', help='Path to config YAML-file / directory of YAML-files')
     args = parser.parse_args(argv)
+
+    if args.config:
+        fileconfig = yaml_load(args.config)
+        delattr(args, 'config')
+    else:
+        fileconfig = {}
     symlinks = {}
+
     if args.symlinks:
         for link in args.symlinks:
             (key, value) = link.split(':')
             symlinks[key] = value
     args.symlinks = symlinks
-    if not args.password:
-        args.password = getpass()
-    return args
+    cliconfig = vars(args)
+    configuration = data_merge(fileconfig, cliconfig)
+
+    for option in ['server', 'project', 'repo', 'target']:
+        if not configuration.get(option):
+            parser.error('Required option "%s" not set.' % option)
+
+    if not configuration.get('password'):
+        configuration['password'] = getpass()
+    if not configuration.get('user'):
+        configuration['user'] = getuser()
+    return configuration
 
 
 def main():
-    args = vars(parse_arguments())
-    clones = CloneAllBranches(**args)
-    clones.create_clones()
+    args = parse_arguments()
+    try:
+        clones = CloneAllBranches(**args)
+        clones.create_clones()
+    except Exception as e:
+        print("ERROR: Could not clone Repository:", file=stderr)
+        print(e, file=stderr)
+        exit(1)
 
 
 if __name__ == '__main__':
