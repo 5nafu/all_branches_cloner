@@ -170,9 +170,9 @@ class CloneAllBranchesTest(unittest.TestCase):
         self.assertIn('testbranch_ahead1', branches)
         self.assertIn('testbranch_ahead2', branches)
 
-    @mock.patch('all_branches_cloner.os.path')
-    @mock.patch('all_branches_cloner.os')
-    @mock.patch('all_branches_cloner.shutil')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os.path')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os')
+    @mock.patch('all_branches_cloner.all_branches_cloner.shutil')
     def test_remove_obsolete_branches_no_removing_only_files(self, shutil_mock, os_mock, path_mock):
         self.cloner.open_branches = []
         os_mock.listdir.return_value = ['file1', 'file2', 'file3']
@@ -182,9 +182,9 @@ class CloneAllBranchesTest(unittest.TestCase):
         os_mock.listdir.assert_called_with(self.directory)
         assert not shutil_mock.rmtree.called, 'rmtree should not have been called'
 
-    @mock.patch('all_branches_cloner.os.path')
-    @mock.patch('all_branches_cloner.os')
-    @mock.patch('all_branches_cloner.shutil')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os.path')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os')
+    @mock.patch('all_branches_cloner.all_branches_cloner.shutil')
     def test_remove_obsolete_branches_no_removing_symlink(self, shutil_mock, os_mock, path_mock):
         self.cloner.open_branches = []
         os_mock.listdir.return_value = ['symlink']
@@ -193,9 +193,9 @@ class CloneAllBranchesTest(unittest.TestCase):
         self.cloner.remove_obsolete_branches()
         assert not shutil_mock.rmtree.called, 'rmtree should not have been called on symlink'
 
-    @mock.patch('all_branches_cloner.os.path')
-    @mock.patch('all_branches_cloner.os')
-    @mock.patch('all_branches_cloner.shutil')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os.path')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os')
+    @mock.patch('all_branches_cloner.all_branches_cloner.shutil')
     def test_remove_obsolete_branches_no_removing_whitelisted(self, shutil_mock, os_mock, path_mock):
         self.cloner.open_branches = []
         self.cloner.keep_environments = ['whitelisted']
@@ -205,9 +205,9 @@ class CloneAllBranchesTest(unittest.TestCase):
         self.cloner.remove_obsolete_branches()
         assert not shutil_mock.rmtree.called, 'rmtree should not have been called on whitelisted'
 
-    @mock.patch('all_branches_cloner.os.path')
-    @mock.patch('all_branches_cloner.os')
-    @mock.patch('all_branches_cloner.shutil')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os.path')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os')
+    @mock.patch('all_branches_cloner.all_branches_cloner.shutil')
     def test_remove_obsolete_branches_no_removing_open(self, shutil_mock, os_mock, path_mock):
         self.cloner.open_branches = ['open']
         os_mock.listdir.return_value = self.cloner.open_branches
@@ -216,9 +216,9 @@ class CloneAllBranchesTest(unittest.TestCase):
         self.cloner.remove_obsolete_branches()
         assert not shutil_mock.rmtree.called, 'rmtree should not have been called on open branch'
 
-    @mock.patch('all_branches_cloner.os.path')
-    @mock.patch('all_branches_cloner.os')
-    @mock.patch('all_branches_cloner.shutil')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os.path')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os')
+    @mock.patch('all_branches_cloner.all_branches_cloner.shutil')
     def test_remove_obsolete_branches_no_removing_open_branch_with_slash(self, shutil_mock, os_mock, path_mock):
         self.cloner.open_branches = ['open/with_slash']
         os_mock.listdir.return_value = ['open___with_slash']
@@ -227,9 +227,9 @@ class CloneAllBranchesTest(unittest.TestCase):
         self.cloner.remove_obsolete_branches()
         assert not shutil_mock.rmtree.called, 'rmtree should not have been called on open branch with slash'
 
-    @mock.patch('all_branches_cloner.os.path')
-    @mock.patch('all_branches_cloner.os')
-    @mock.patch('all_branches_cloner.shutil')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os.path')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os')
+    @mock.patch('all_branches_cloner.all_branches_cloner.shutil')
     def test_remove_obsolete_branches_removes_merged_branch(self, shutil_mock, os_mock, path_mock):
         self.cloner.open_branches = []
         os_mock.listdir.return_value = ['merged']
@@ -240,9 +240,9 @@ class CloneAllBranchesTest(unittest.TestCase):
         shutil_mock.rmtree.assert_called_with('merged')
         path_mock.join.assert_called_with(self.directory, 'merged')
 
-    @mock.patch('all_branches_cloner.git')
-    @mock.patch('all_branches_cloner.os.path')
-    @mock.patch('all_branches_cloner.os')
+    @mock.patch('all_branches_cloner.all_branches_cloner.git')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os.path')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os')
     def test_update_or_clone_open_branches_do_nothing_if_no_open(self, os_mock, path_mock, git_mock):
         self.cloner.open_branches = []
         git_mock.Git = mock.Mock()
@@ -251,9 +251,9 @@ class CloneAllBranchesTest(unittest.TestCase):
         self.cloner.update_or_clone_open_branches()
         assert not git_mock.Git.called, 'Git should not have been called'
 
-    @mock.patch('all_branches_cloner.git')
-    @mock.patch('all_branches_cloner.os.path')
-    @mock.patch('all_branches_cloner.os')
+    @mock.patch('all_branches_cloner.all_branches_cloner.git')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os.path')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os')
     def test_update_or_clone_open_branches_pulls_existing_branch(self, os_mock, path_mock, git_mock):
         self.cloner.open_branches = ['existing_open_branch']
         git_mock.Git = mock.Mock()
@@ -263,9 +263,9 @@ class CloneAllBranchesTest(unittest.TestCase):
         git_mock.Git.assert_called_with('existing_open_branch')
         assert git_mock.Git('existing_open_branch').pull.called, 'Git pull should have been called'
 
-    @mock.patch('all_branches_cloner.git')
-    @mock.patch('all_branches_cloner.os.path')
-    @mock.patch('all_branches_cloner.os')
+    @mock.patch('all_branches_cloner.all_branches_cloner.git')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os.path')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os')
     def test_update_or_clone_open_branches_pulls_or_clones_branch_with_slash(self, os_mock, path_mock, git_mock):
         git_url = 'ssh://git@%s:7999/%s/%s.git' % (self.host, self.project, self.repo)
         self.cloner.open_branches = ['existing_open_branch/with_slash']
@@ -281,9 +281,9 @@ class CloneAllBranchesTest(unittest.TestCase):
             depth=1)
         self.assertNotIn(git_call, git_mock.Git().clone.call_args_list)
 
-    @mock.patch('all_branches_cloner.git')
-    @mock.patch('all_branches_cloner.os.path')
-    @mock.patch('all_branches_cloner.os')
+    @mock.patch('all_branches_cloner.all_branches_cloner.git')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os.path')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os')
     def test_update_or_clone_open_branches_clone_new_branch(self, os_mock, path_mock, git_mock):
         git_url = 'ssh://git@%s:7999/%s/%s.git' % (self.host, self.project, self.repo)
         target_dir = self.directory + '/new_open_branch'
@@ -295,9 +295,9 @@ class CloneAllBranchesTest(unittest.TestCase):
         git_mock.Git.assert_called_with()
         git_mock.Git().clone.assert_called_with(git_url, target_dir, depth=1, branch='new_open_branch')
 
-    @mock.patch('all_branches_cloner.git')
-    @mock.patch('all_branches_cloner.os.path')
-    @mock.patch('all_branches_cloner.os')
+    @mock.patch('all_branches_cloner.all_branches_cloner.git')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os.path')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os')
     def test_update_or_clone_open_branches_dont_symlink_existing(self, os_mock, path_mock, git_mock):
         self.cloner.open_branches = ['open_branch1', 'open_branch2']
         self.cloner.symlinks = {'symlink1': 'target1', 'symlink2': 'target2'}
@@ -307,9 +307,9 @@ class CloneAllBranchesTest(unittest.TestCase):
         self.cloner.update_or_clone_open_branches()
         assert not os_mock.symlink.called, 'Symlink should not be created'
 
-    @mock.patch('all_branches_cloner.git')
-    @mock.patch('all_branches_cloner.os.path')
-    @mock.patch('all_branches_cloner.os')
+    @mock.patch('all_branches_cloner.all_branches_cloner.git')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os.path')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os')
     def test_update_or_clone_open_branches_create_symlinks(self, os_mock, path_mock, git_mock):
         self.cloner.open_branches = ['open_branch1', 'open_branch2']
         self.cloner.symlinks = {'symlink1': 'target1', 'symlink2': 'target2'}
