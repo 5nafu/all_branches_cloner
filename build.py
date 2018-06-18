@@ -52,6 +52,7 @@ def create_deb(project, logger):
 def set_properties(project):
     project.depends_on('requests')
     project.depends_on('gitpython')
+    project.depends_on('yamlreader')
     project.build_depends_on('testfixtures')
     project.build_depends_on('responses')
     project.build_depends_on('mock')
@@ -59,6 +60,5 @@ def set_properties(project):
 
 @init(environments='jenkins')
 def set_properties_for_jenkins_builds(project):
-    import os
     project.set_property('teamcity_output', True)
     project.default_task = ['install_dependencies', 'clean', 'analyze', 'package', 'create_deb']
