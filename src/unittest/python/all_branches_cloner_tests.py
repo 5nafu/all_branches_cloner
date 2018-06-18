@@ -219,6 +219,17 @@ class CloneAllBranchesTest(unittest.TestCase):
     @mock.patch('all_branches_cloner.os.path')
     @mock.patch('all_branches_cloner.os')
     @mock.patch('all_branches_cloner.shutil')
+    def test_remove_obsolete_branches_no_removing_open_branch_with_slash(self, shutil_mock, os_mock, path_mock):
+        self.cloner.open_branches = ['open/with_slash']
+        os_mock.listdir.return_value = ['open___with_slash']
+        path_mock.isdir.return_value = True
+        path_mock.islink.return_value = False
+        self.cloner.remove_obsolete_branches()
+        assert not shutil_mock.rmtree.called, 'rmtree should not have been called on open branch with slash'
+
+    @mock.patch('all_branches_cloner.os.path')
+    @mock.patch('all_branches_cloner.os')
+    @mock.patch('all_branches_cloner.shutil')
     def test_remove_obsolete_branches_removes_merged_branch(self, shutil_mock, os_mock, path_mock):
         self.cloner.open_branches = []
         os_mock.listdir.return_value = ['merged']
@@ -251,6 +262,24 @@ class CloneAllBranchesTest(unittest.TestCase):
         self.cloner.update_or_clone_open_branches()
         git_mock.Git.assert_called_with('existing_open_branch')
         assert git_mock.Git('existing_open_branch').pull.called, 'Git pull should have been called'
+
+    @mock.patch('all_branches_cloner.git')
+    @mock.patch('all_branches_cloner.os.path')
+    @mock.patch('all_branches_cloner.os')
+    def test_update_or_clone_open_branches_pulls_or_clones_branch_with_slash(self, os_mock, path_mock, git_mock):
+        git_url = 'ssh://git@%s:7999/%s/%s.git' % (self.host, self.project, self.repo)
+        self.cloner.open_branches = ['existing_open_branch/with_slash']
+        target_dir = os.path.join(self.directory, self.cloner.open_branches[0])
+        git_mock.Git = mock.Mock()
+        path_mock.isdir.return_value = False
+        path_mock.join.side_effect = os.path.join
+        self.cloner.update_or_clone_open_branches()
+        git_call = mock.call(
+            git_url,
+            target_dir,
+            branch=self.cloner.open_branches[0],
+            depth=1)
+        self.assertNotIn(git_call, git_mock.Git().clone.call_args_list)
 
     @mock.patch('all_branches_cloner.git')
     @mock.patch('all_branches_cloner.os.path')
