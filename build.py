@@ -13,6 +13,8 @@ use_plugin('python.distutils')
 name = 'all-branches-cloner'
 license = 'GNU GPL v3'
 version = '1.1'
+version = '%s-%s' % (version,
+                     os.environ.get('BUILD_NUMBER', 0))
 summary = 'Clones all open branches from a bitbucket server'
 default_task = ['install_dependencies', 'clean', 'analyze', 'package']
 authors = [Author('Tobias Vollmer', 'info@tvollmer.de')]
@@ -53,3 +55,10 @@ def set_properties(project):
     project.build_depends_on('testfixtures')
     project.build_depends_on('responses')
     project.build_depends_on('mock')
+
+
+@init(environments='jenkins')
+def set_properties_for_jenkins_builds(project):
+    import os
+    project.set_property('teamcity_output', True)
+    project.default_task = ['install_build_dependencies', 'clean', 'analyze', 'package', 'create_deb']
