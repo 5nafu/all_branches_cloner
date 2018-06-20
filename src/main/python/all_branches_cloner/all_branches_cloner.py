@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import requests
+import re
 import os
 import git
 import logging
@@ -25,9 +26,9 @@ class CloneAllBranches(object):
         options['password'] = '********' if options['password'] else options['password']
         self.logger.info(options)
 
-
     def __sanitize_name(self, name):
-        return name.replace('/', '___')
+        sanitized_regex = re.compile('[^\w]')
+        return sanitized_regex.sub('___', name)
 
     def get_all_branch_info(self):
         self.logger.info('STARTING - getting all branches')

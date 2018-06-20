@@ -56,6 +56,8 @@ def set_properties(project):
     project.build_depends_on('testfixtures')
     project.build_depends_on('responses')
     project.build_depends_on('mock')
+    project.set_property('flake8_break_build', True)
+    project.set_property('flake8_ignore', 'E501')
 
 
 @init(environments='jenkins')
