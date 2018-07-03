@@ -70,10 +70,10 @@ def parse_arguments(argv=None):
 
     if args.config:
         fileconfig = yaml_load(args.config)
-        delattr(args, 'config')
     else:
         fileconfig = {}
     symlinks = {}
+    delattr(args, 'config')
 
     if args.symlinks:
         for link in args.symlinks:

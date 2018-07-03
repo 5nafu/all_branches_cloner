@@ -95,6 +95,7 @@ class CloneAllBranchesTest(unittest.TestCase):
         testdata = [{
             'id': 'refs/heads/master',
             'displayId': 'master',
+            'latestCommit': 'c2f29994eb3499ac32d79b1bd6d398abaf1cd27a',
             'metadata': {
                 'com.atlassian.bitbucket.server.bitbucket-branch:latest-commit-metadata': {
                     'id': 'c2f29994eb3415ac32d79b1bd6d398abaf1cd27a',
@@ -109,6 +110,7 @@ class CloneAllBranchesTest(unittest.TestCase):
             {
                 'id': 'refs/heads/master',
                 'displayId': 'master',
+                'latestCommit': 'c2f29994eb3499ac32d79b1bd6d398abaf1cd27a',
                 'metadata': {
                     'com.atlassian.bitbucket.server.bitbucket-branch:latest-commit-metadata': {
                         'id': 'c2f29994eb3415ac32d79b1bd6d398abaf1cd27a',
@@ -119,6 +121,7 @@ class CloneAllBranchesTest(unittest.TestCase):
             {
                 'id': 'refs/heads/testbranch_behind',
                 'displayId': 'testbranch_behind',
+                'latestCommit': 'c2f29994eb3499ac32d79b1bd6d398abaf1cd27b',
                 'metadata': {
                     'com.atlassian.bitbucket.server.bitbucket-branch:ahead-behind-metadata-provider': {
                         'ahead': 0,
@@ -134,6 +137,7 @@ class CloneAllBranchesTest(unittest.TestCase):
             {
                 'id': 'refs/heads/testbranch_ahead1',
                 'displayId': 'testbranch_ahead1',
+                'latestCommit': 'c2f29994eb3499ac32d79b1bd6d398abaf1cd27c',
                 'metadata': {
                     'com.atlassian.bitbucket.server.bitbucket-branch:ahead-behind-metadata-provider': {
                         'ahead': 123,
@@ -149,6 +153,7 @@ class CloneAllBranchesTest(unittest.TestCase):
             {
                 'id': 'refs/heads/testbranch_ahead2',
                 'displayId': 'testbranch_ahead2',
+                'latestCommit': 'c2f29994eb3499ac32d79b1bd6d398abaf1cd27d',
                 'metadata': {
                     'com.atlassian.bitbucket.server.bitbucket-branch:ahead-behind-metadata-provider': {
                         'ahead': 456,
@@ -174,7 +179,7 @@ class CloneAllBranchesTest(unittest.TestCase):
     @mock.patch('all_branches_cloner.all_branches_cloner.os')
     @mock.patch('all_branches_cloner.all_branches_cloner.shutil')
     def test_remove_obsolete_branches_no_removing_only_files(self, shutil_mock, os_mock, path_mock):
-        self.cloner.open_branches = []
+        self.cloner.open_branches = {}
         os_mock.listdir.return_value = ['file1', 'file2', 'file3']
         path_mock.isdir.return_value = False
         path_mock.islink.return_value = False
@@ -186,7 +191,7 @@ class CloneAllBranchesTest(unittest.TestCase):
     @mock.patch('all_branches_cloner.all_branches_cloner.os')
     @mock.patch('all_branches_cloner.all_branches_cloner.shutil')
     def test_remove_obsolete_branches_no_removing_symlink(self, shutil_mock, os_mock, path_mock):
-        self.cloner.open_branches = []
+        self.cloner.open_branches = {}
         os_mock.listdir.return_value = ['symlink']
         path_mock.isdir.return_value = True
         path_mock.islink.return_value = True
@@ -197,7 +202,7 @@ class CloneAllBranchesTest(unittest.TestCase):
     @mock.patch('all_branches_cloner.all_branches_cloner.os')
     @mock.patch('all_branches_cloner.all_branches_cloner.shutil')
     def test_remove_obsolete_branches_no_removing_whitelisted(self, shutil_mock, os_mock, path_mock):
-        self.cloner.open_branches = []
+        self.cloner.open_branches = {}
         self.cloner.keep_environments = ['whitelisted']
         os_mock.listdir.return_value = self.cloner.keep_environments
         path_mock.isdir.return_value = True
@@ -209,8 +214,8 @@ class CloneAllBranchesTest(unittest.TestCase):
     @mock.patch('all_branches_cloner.all_branches_cloner.os')
     @mock.patch('all_branches_cloner.all_branches_cloner.shutil')
     def test_remove_obsolete_branches_no_removing_open(self, shutil_mock, os_mock, path_mock):
-        self.cloner.open_branches = ['open']
-        os_mock.listdir.return_value = self.cloner.open_branches
+        self.cloner.open_branches = {'open': 'c2f29994eb3499ac32d79b1bd6d398abaf1cd27c'}
+        os_mock.listdir.return_value = self.cloner.open_branches.keys()
         path_mock.isdir.return_value = True
         path_mock.islink.return_value = False
         self.cloner.remove_obsolete_branches()
@@ -220,7 +225,7 @@ class CloneAllBranchesTest(unittest.TestCase):
     @mock.patch('all_branches_cloner.all_branches_cloner.os')
     @mock.patch('all_branches_cloner.all_branches_cloner.shutil')
     def test_remove_obsolete_branches_no_removing_open_branch_with_slash(self, shutil_mock, os_mock, path_mock):
-        self.cloner.open_branches = ['open/with_slash']
+        self.cloner.open_branches = {'open/with_slash': 'c2f29994eb3499ac32d79b1bd6d398abaf1cd27c'}
         os_mock.listdir.return_value = ['open___with_slash']
         path_mock.isdir.return_value = True
         path_mock.islink.return_value = False
@@ -231,7 +236,7 @@ class CloneAllBranchesTest(unittest.TestCase):
     @mock.patch('all_branches_cloner.all_branches_cloner.os')
     @mock.patch('all_branches_cloner.all_branches_cloner.shutil')
     def test_remove_obsolete_branches_removes_merged_branch(self, shutil_mock, os_mock, path_mock):
-        self.cloner.open_branches = []
+        self.cloner.open_branches = {}
         os_mock.listdir.return_value = ['merged']
         path_mock.isdir.return_value = True
         path_mock.islink.return_value = False
@@ -244,42 +249,60 @@ class CloneAllBranchesTest(unittest.TestCase):
     @mock.patch('all_branches_cloner.all_branches_cloner.os.path')
     @mock.patch('all_branches_cloner.all_branches_cloner.os')
     def test_update_or_clone_open_branches_do_nothing_if_no_open(self, os_mock, path_mock, git_mock):
-        self.cloner.open_branches = []
-        git_mock.Git = mock.Mock()
+        self.cloner.open_branches = {}
+        git_mock.Repo = mock.Mock()
         path_mock.isdir.return_value = True
         path_mock.join.return_value = 'branch'
         self.cloner.update_or_clone_open_branches()
-        assert not git_mock.Git.called, 'Git should not have been called'
+        assert not git_mock.Repo.called, 'Git should not have been called'
 
     @mock.patch('all_branches_cloner.all_branches_cloner.git')
     @mock.patch('all_branches_cloner.all_branches_cloner.os.path')
     @mock.patch('all_branches_cloner.all_branches_cloner.os')
-    def test_update_or_clone_open_branches_pulls_existing_branch(self, os_mock, path_mock, git_mock):
-        self.cloner.open_branches = ['existing_open_branch']
-        git_mock.Git = mock.Mock()
+    def test_update_or_clone_open_branches_pulls_existing_updated_branch(self, os_mock, path_mock, git_mock):
+        self.cloner.open_branches = {'existing_open_branch': 'c2f29994eb3499ac32d79b1bd6d398abaf1cd27d'}
+        git_mock.Repo = mock.Mock()
+        git_mock.Repo().head = mock.Mock()
+        git_mock.Repo().head.object = mock.Mock(hexsha='c2f29994eb3499ac32d79b1bd6d398abaf1cd27c')
+
         path_mock.isdir.return_value = True
         path_mock.join.return_value = 'existing_open_branch'
         self.cloner.update_or_clone_open_branches()
-        git_mock.Git.assert_called_with('existing_open_branch')
-        assert git_mock.Git('existing_open_branch').pull.called, 'Git pull should have been called'
+        git_mock.Repo.assert_called_with('existing_open_branch')
+        assert git_mock.Repo('existing_open_branch').remotes.origin.pull.called, 'Git pull should have been called'
+
+    @mock.patch('all_branches_cloner.all_branches_cloner.git')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os.path')
+    @mock.patch('all_branches_cloner.all_branches_cloner.os')
+    def test_update_or_clone_open_branches_pulls_existing_up_to_date_branch(self, os_mock, path_mock, git_mock):
+        latest_commit = 'c2f29994eb3499ac32d79b1bd6d398abaf1cd27c'
+        self.cloner.open_branches = {'existing_open_branch': latest_commit}
+        git_mock.Repo = mock.Mock()
+        git_mock.Repo().head = mock.Mock()
+        git_mock.Repo().head.object = mock.Mock(hexsha=latest_commit)
+        path_mock.isdir.return_value = True
+        path_mock.join.return_value = 'existing_open_branch'
+        self.cloner.update_or_clone_open_branches()
+        git_mock.Repo.assert_called_with('existing_open_branch')
+        assert not git_mock.Repo('existing_open_branch').remotes.origin.pull.called, 'Git pull should have been called'
 
     @mock.patch('all_branches_cloner.all_branches_cloner.git')
     @mock.patch('all_branches_cloner.all_branches_cloner.os.path')
     @mock.patch('all_branches_cloner.all_branches_cloner.os')
     def test_update_or_clone_open_branches_pulls_or_clones_branch_with_slash(self, os_mock, path_mock, git_mock):
         git_url = 'ssh://git@%s:7999/%s/%s.git' % (self.host, self.project, self.repo)
-        self.cloner.open_branches = ['existing_open_branch/with_slash']
-        target_dir = os.path.join(self.directory, self.cloner.open_branches[0])
+        self.cloner.open_branches = {'existing_open_branch/with_slash': 'c2f29994eb3499ac32d79b1bd6d398abaf1cd27c'}
+        target_dir = os.path.join(self.directory, self.cloner.open_branches.keys()[0])
         git_mock.Git = mock.Mock()
         path_mock.isdir.return_value = False
         path_mock.join.side_effect = os.path.join
         self.cloner.update_or_clone_open_branches()
-        git_call = mock.call(
+        git_clone_call = mock.call(
             git_url,
             target_dir,
-            branch=self.cloner.open_branches[0],
+            branch=self.cloner.open_branches.keys()[0],
             depth=1)
-        self.assertNotIn(git_call, git_mock.Git().clone.call_args_list)
+        self.assertNotIn(git_clone_call, git_mock.Git().clone.call_args_list)
 
     @mock.patch('all_branches_cloner.all_branches_cloner.git')
     @mock.patch('all_branches_cloner.all_branches_cloner.os.path')
@@ -287,7 +310,7 @@ class CloneAllBranchesTest(unittest.TestCase):
     def test_update_or_clone_open_branches_clone_new_branch(self, os_mock, path_mock, git_mock):
         git_url = 'ssh://git@%s:7999/%s/%s.git' % (self.host, self.project, self.repo)
         target_dir = self.directory + '/new_open_branch'
-        self.cloner.open_branches = ['new_open_branch']
+        self.cloner.open_branches = {'new_open_branch': 'c2f29994eb3499ac32d79b1bd6d398abaf1cd27c'}
         git_mock.Git = mock.Mock()
         path_mock.isdir.return_value = False
         path_mock.join.return_value = target_dir
@@ -299,7 +322,7 @@ class CloneAllBranchesTest(unittest.TestCase):
     @mock.patch('all_branches_cloner.all_branches_cloner.os.path')
     @mock.patch('all_branches_cloner.all_branches_cloner.os')
     def test_update_or_clone_open_branches_dont_symlink_existing(self, os_mock, path_mock, git_mock):
-        self.cloner.open_branches = ['open_branch1', 'open_branch2']
+        self.cloner.open_branches = {'open_branch1': 'c2f29994eb3499ac32d79b1bd6d398abaf1cd27c', 'open_branch2': 'c2f29994eb3499ac32d79b1bd6d398abaf1cd27d'}
         self.cloner.symlinks = {'symlink1': 'target1', 'symlink2': 'target2'}
         path_mock.isdir.return_value = False
         path_mock.exists.return_value = True
@@ -311,14 +334,14 @@ class CloneAllBranchesTest(unittest.TestCase):
     @mock.patch('all_branches_cloner.all_branches_cloner.os.path')
     @mock.patch('all_branches_cloner.all_branches_cloner.os')
     def test_update_or_clone_open_branches_create_symlinks(self, os_mock, path_mock, git_mock):
-        self.cloner.open_branches = ['open_branch1', 'open_branch2']
+        self.cloner.open_branches = {'open_branch1': 'c2f29994eb3499ac32d79b1bd6d398abaf1cd27c', 'open_branch2': 'c2f29994eb3499ac32d79b1bd6d398abaf1cd27d'}
         self.cloner.symlinks = {'symlink1': 'target1', 'symlink2': 'target2'}
         path_mock.isdir.return_value = False
         path_mock.exists.return_value = False
         path_mock.join.side_effect = os.path.join
         self.cloner.update_or_clone_open_branches()
         calls = []
-        for branch in self.cloner.open_branches:
+        for branch in self.cloner.open_branches.keys():
             for symlink in self.cloner.symlinks.keys():
                 calls.append(mock.call(self.cloner.symlinks[symlink], '/'.join([self.directory, branch, symlink])))
         os_mock.symlink.assert_has_calls(calls, any_order=True)
@@ -327,12 +350,12 @@ class CloneAllBranchesTest(unittest.TestCase):
     @mock.patch('all_branches_cloner.all_branches_cloner.os.path')
     @mock.patch('all_branches_cloner.all_branches_cloner.os')
     def test_update_or_clone_open_branches_create_symlinks_with_slash(self, os_mock, path_mock, git_mock):
-        self.cloner.open_branches = ['open_branch1/with_slash']
+        self.cloner.open_branches = {'open_branch1/with_slash': 'c2f29994eb3499ac32d79b1bd6d398abaf1cd27c'}
         self.cloner.symlinks = {'symlink1': 'target1'}
         path_mock.isdir.return_value = False
         path_mock.exists.return_value = False
         path_mock.join.side_effect = os.path.join
         self.cloner.update_or_clone_open_branches()
-        call = mock.call(self.cloner.symlinks['symlink1'], '/'.join([self.directory, self.cloner.open_branches[0], 'symlink1']))
+        call = mock.call(self.cloner.symlinks['symlink1'], '/'.join([self.directory, self.cloner.open_branches.keys()[0], 'symlink1']))
         self.assertNotIn(call, os_mock.symlink.call_args_list)
         assert os_mock.symlink.call_count == 1

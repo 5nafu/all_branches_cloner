@@ -53,12 +53,12 @@ class CloneAllBranches(object):
 
     def get_open_branch_names(self, all_branches):
         self.logger.info('STARTING - getting open branches')
-        open_branches = []
+        open_branches = {}
         provider = 'com.atlassian.bitbucket.server.bitbucket-branch:ahead-behind-metadata-provider'
         for branch in all_branches:
             if branch['metadata'].get(provider) and branch['metadata'][provider]['ahead'] > 0:
                 self.logger.info('Found open branch "%s" (%i commits ahead)' % (branch['displayId'], branch['metadata'][provider]['ahead']))
-                open_branches.append(branch['displayId'])
+                open_branches[branch['displayId']] = branch['latestCommit']
         self.logger.info('FINISHED - getting open branches')
         return open_branches
 
@@ -82,11 +82,17 @@ class CloneAllBranches(object):
         self.logger.info('STARTING - updating / cloning open branches')
         git_url = 'ssh://git@%s:7999/%s/%s.git' % (self.server, self.project, self.repo)
         self.logger.info('Fetching from "%s"' % git_url)
-        for branch in self.open_branches:
+        for branch in self.open_branches.keys():
             directory = os.path.join(self.target, self.__sanitize_name(branch))
             if os.path.isdir(directory):
-                self.logger.info('Branch "%s" exists - pulling from remote' % branch)
-                git.Git(directory).pull()
+
+                repository = git.Repo(directory)
+                current_commit = repository.head.object.hexsha
+                if current_commit != self.open_branches[branch]:
+                    self.logger.info('Branch "%s" exists but is outdated (%s) - pulling from remote' % (branch, current_commit))
+                    repository.remotes.origin.pull(depth=1)
+                else:
+                    self.logger.info('Branch "%s" exists and up to date - skipped' % branch)
             else:
                 self.logger.info('Branch "%s" does not exist - cloning' % branch)
                 git.Git().clone(git_url, directory, depth=1, branch=branch)
