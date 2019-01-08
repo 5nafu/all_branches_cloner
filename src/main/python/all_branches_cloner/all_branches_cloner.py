@@ -40,7 +40,7 @@ class CloneAllBranches(object):
         while not lastpage:
             url = repourl % (self.server, self.project, self.repo, start)
             self.logger.info('Requesting: "%s"' % url)
-            request = requests.get(url, auth=(self.user, self.password))
+            request = requests.get(url, auth=(self.user, self.password), verify=False)
             json = request.json()
             metadata.extend(json['values'])
             lastpage = json['isLastPage']
